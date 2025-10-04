@@ -17,7 +17,7 @@
   const APP_BASE_PATH =
     typeof window.APP_BASE_PATH === "string" ? window.APP_BASE_PATH : "";
   const EXPECTED_HEADER =
-    "DATE_ACTE;NUM_INTERVENTION;NUM_VENUE;ACTE_ID;CODE_ACTE;ACTIVITE_OU_COEFF;TYPE_ACTE";
+    "DATE_ACTE;NUM_INTERVENTION;NUM_VENUE;ACTE_ID;CODE_ACTE;ACTIVITE_OU_COEFF;TYPE_ACTE;ORIGINEINTER";
   const DEFAULT_FILE_LABEL = "Aucun fichier sélectionné";
 
   const fileInput = /** @type {HTMLInputElement|null} */ (

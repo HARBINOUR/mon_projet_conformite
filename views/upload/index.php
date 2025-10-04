@@ -217,7 +217,7 @@ declare(strict_types=1);
                           Respectez les en-têtes obligatoires :
                         </p>
                         <code class="text-wrap"
-                          >DATE_ACTE;NUM_INTERVENTION;NUM_VENUE;ACTE_ID;CODE_ACTE;ACTIVITE_OU_COEFF;TYPE_ACTE</code
+                          >DATE_ACTE;NUM_INTERVENTION;NUM_VENUE;ACTE_ID;CODE_ACTE;ACTIVITE_OU_COEFF;TYPE_ACTE;ORIGINEINTER</code
                         >
                       </div>
                     </li>

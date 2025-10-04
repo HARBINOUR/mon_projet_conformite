@@ -16,6 +16,8 @@ namespace App\Services;
  */
 class ComparisonService
 {
+    /** @var \App\Repositories\ActeRepository|null */
+    private $acteRepository = null;
     /** @var int */
     private $dateToleranceMinutes = 0;
 
@@ -78,6 +80,12 @@ class ComparisonService
                 if (isset($byType[$missingType])) { // Toujours vrai avec le fallback
                     $byType[$missingType]['missing']++;
                 }
+
+                // Nouvelle vérification : le dossier est-il en C9 ?
+                if ($this->isC9($row['num_intervention'], $row['num_venue'])) {
+                    $matchResult['reason'] = 'dossier_en_C9';
+                }
+
                 $missingActs[] = ['id' => $acteId, 'type' => $missingType, 'reason' => $matchResult['reason']];
             }
         }
@@ -182,5 +190,23 @@ class ComparisonService
     private function normalizeString($value): string
     {
         return strtolower(trim((string)$value));
+    }
+
+    /**
+     * Vérifie si un acte est en 'C9' dans W_SERVEURACTE.
+     *
+     * @param string|null $numIntervention
+     * @param string|null $numVenue
+     * @return bool
+     */
+    private function isC9(?string $numIntervention, ?string $numVenue): bool
+    {
+        if (empty($numIntervention) || empty($numVenue)) {
+            return false;
+        }
+        if ($this->acteRepository === null) {
+            $this->acteRepository = new \App\Repositories\ActeRepository(\App\Infra\OracleConnection::getPdo());
+        }
+        return $this->acteRepository->checkC9Exists($numIntervention, $numVenue);
     }
 }

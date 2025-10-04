@@ -86,21 +86,27 @@ final class ApiController extends Controller
                 return;
             }
 
-            // Extrait et déduplique les identifiants
-            $acteIds = array_values(array_unique(array_map(
-                static fn($r) => $r['acte_id'] ?? null,
+            // Extrait les paires (id, origineinter) et déduplique
+            $actesToFetch = array_map(
+                static fn($r) => [
+                    'id' => $r['acte_id'] ?? null,
+                    'origineinter' => $r['origineinter'] ?? null
+                ],
                 $rows
-            )));
-            $acteIds = array_values(array_filter($acteIds, static fn($v) => $v !== null && $v !== ''));
+            );
+            // Filtre les entrées invalides et supprime les doublons
+            $actesToFetch = array_values(array_unique(array_filter($actesToFetch, static fn($a) => 
+                !empty($a['id']) && !empty($a['origineinter'])
+            ), SORT_REGULAR));
 
-            if (count($acteIds) === 0) {
-                $this->json(['error' => ['code' => 'NO_IDS', 'message' => 'Aucun acte_id détecté']], 422);
+            if (count($actesToFetch) === 0) {
+                $this->json(['error' => ['code' => 'NO_IDS', 'message' => 'Aucune paire (acte_id, origineinter) valide détectée.']], 422);
                 return;
             }
 
             // Garde-fou volumétrie
             $maxIds = 20000;
-            if (count($acteIds) > $maxIds) {
+            if (count($actesToFetch) > $maxIds) {
                 $this->json(['error' => ['code' => 'TOO_MANY_IDS', 'limit' => $maxIds]], 413);
                 return;
             }
@@ -108,7 +114,7 @@ final class ApiController extends Controller
             // --- Requête DB
             $oracle = new OracleService(); // backend DB réel, MySQL dans ta stack actuelle
             $tSqlStart = microtime(true);
-            $oracleRows = $oracle->fetchActsByIdsChunked($acteIds, (int)CHUNK_SIZE);
+            $oracleRows = $oracle->fetchActsByIdsChunked($actesToFetch, (int)CHUNK_SIZE);
             $tSqlMs = (int)round((microtime(true) - $tSqlStart) * 1000);
 
             // --- Comparaison métier

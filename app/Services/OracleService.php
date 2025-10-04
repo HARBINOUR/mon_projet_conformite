@@ -17,19 +17,18 @@ use App\Repositories\ActeRepository;
 class OracleService
 {
     /**
-     * @param array<int,string|int> $ids
+     * @param array<int,array{id:string, origineinter:string}> $actes
      * @return array<int,array<string,mixed>>
      */
-    public function fetchActsByIdsChunked(array $ids, int $chunkSize = 800): array
+    public function fetchActsByIdsChunked(array $actes, int $chunkSize = 800): array
     {
-        $ids = array_values(array_unique(array_map('strval', $ids)));
-        if (!$ids) return [];
+        if (!$actes) return [];
 
         $pdo = OracleConnection::getPdo();
         $repo = new ActeRepository($pdo);
 
         $all = [];
-        foreach (array_chunk($ids, max(1, $chunkSize)) as $chunk) {
+        foreach (array_chunk($actes, max(1, $chunkSize)) as $chunk) {
             $rows = $repo->fetchByActeIds($chunk);
             if ($rows) {
                 $all = array_merge($all, $rows);

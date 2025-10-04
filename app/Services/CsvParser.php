@@ -26,10 +26,11 @@ class CsvParser
         'acte_id',
         'code_acte',
         'activite_ou_coeff',
-        'type_acte'
+        'type_acte',
+        'origineinter'
     ];
 
-    private const HEADER_LINE_DISPLAY = 'DATE_ACTE;NUM_INTERVENTION;NUM_VENUE;ACTE_ID;CODE_ACTE;ACTIVITE_OU_COEFF;TYPE_ACTE';
+    private const HEADER_LINE_DISPLAY = 'DATE_ACTE;NUM_INTERVENTION;NUM_VENUE;ACTE_ID;CODE_ACTE;ACTIVITE_OU_COEFF;TYPE_ACTE;ORIGINEINTER';
 
     public function __construct(string $path)
     {

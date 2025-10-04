@@ -24,22 +24,27 @@ class ActeRepository
     }
 
     /**
-     * @param array<int,string> $ids
+     * @param array<int,array{id:string, origineinter:string}> $actes
      * @return array<int,array<string,mixed>>
      */
-    public function fetchByActeIds(array $ids): array
+    public function fetchByActeIds(array $actes): array
     {
-        if (!$ids) return [];
+        if (!$actes) return [];
 
-        // Placeholders nommés :id0, :id1, ...
-        $ph = [];
+        // Construction de la clause WHERE pour (noacte, origineinter)
+        $conditions = [];
         $bind = [];
-        foreach ($ids as $i => $id) {
-            $name = ":id{$i}";
-            $ph[] = $name;
-            $bind[$name] = (string)$id;
+        $i = 0;
+        foreach ($actes as $acte) {
+            $idParam = ":id{$i}";
+            $origineParam = ":origine{$i}";
+            
+            $conditions[] = "(a.noacte = {$idParam} AND a.origineinter = {$origineParam})";
+            $bind[$idParam] = (string)$acte['id'];
+            $bind[$origineParam] = (string)$acte['origineinter'];
+            $i++;
         }
-        $in = implode(',', $ph);
+        $whereClause = implode(' OR ', $conditions);
 
         // NGAP
         $sqlNgap = "SELECT
@@ -53,9 +58,9 @@ class ActeRepository
                     DATE_FORMAT(a.dateexec, '%d/%m/%Y %H:%i') AS date_acte,
                     'NGAP'          AS typefrom
                     FROM oc_actengap a
-                    JOIN oc_intervention i ON i.internum = a.internum
-                    JOIN o_venue v         ON v.vennum   = i.vennum
-                    WHERE a.noacte IN ($in)
+                    LEFT JOIN oc_intervention i ON i.internum = a.internum
+                    LEFT JOIN o_venue v         ON v.vennum   = i.vennum
+                    WHERE {$whereClause}
         ";
 
         // CCAM
@@ -70,11 +75,9 @@ class ActeRepository
                         DATE_FORMAT(a.dateexec, '%d/%m/%Y %H:%i') AS date_acte,
                         'CCAM' AS typefrom
                     FROM oc_acteccam a
-                    JOIN oc_intervention i
-                        ON i.internum = a.internum
-                    JOIN o_venue v
-                        ON v.vennum = i.vennum
-                    WHERE a.noacte IN  ($in)
+                    LEFT JOIN oc_intervention i ON i.internum = a.internum
+                    LEFT JOIN o_venue v         ON v.vennum   = i.vennum
+                    WHERE {$whereClause}
         ";
 
         $rows = [];
@@ -92,5 +95,28 @@ class ActeRepository
         return array_map(static function (array $row): array {
             return array_change_key_case($row, CASE_LOWER);
         }, $rows);
+    }
+
+    /**
+     * Vérifie si un acte avec le code 'C9' existe pour une intervention et une venue données.
+     *
+     * @param string $numIntervention Le numéro de dossier (nodossier).
+     * @param string $numVenue Le numéro de venue (novenue).
+     * @return bool Retourne true si un acte 'C9' est trouvé, false sinon.
+     */
+    public function checkC9Exists(string $numIntervention, string $numVenue): bool
+    {
+        $sql = "SELECT 1 
+                FROM W_SERVEURACTE 
+                WHERE cocode = 'C9' 
+                  AND nodossier = :nodossier 
+                  AND novenue = :novenue";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue(':nodossier', $numIntervention, PDO::PARAM_STR);
+        $stmt->bindValue(':novenue', $numVenue, PDO::PARAM_STR);
+        $stmt->execute();
+
+        return $stmt->fetchColumn() !== false;
     }
 }
