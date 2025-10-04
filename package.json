@@ -1,0 +1,8 @@
+{
+  "license": "MIT",
+  "scripts": {
+    "license:enforce": "node scripts/enforce-mit.js",
+    "license:check": "node scripts/check-mit.js",
+    "license:check:git": "git ls-files \"**/*.{js,jsx,ts,tsx}\" | xargs -r grep -L -i \"SPDX-License-Identifier:\\s*MIT\" && node -e \"process.exit(require('./package.json').license==='MIT'?0:1)\""
+  }
+}

@@ -1,0 +1,404 @@
+<?php
+declare(strict_types=1);
+/**
+ * Vue principale de l'application (SPA).
+ * La variable $basePath est injectée par le front controller (public/index.php).
+ * @var string $basePath
+ */
+?>
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Outil de Conformité d’Actes</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
+    <link rel="stylesheet" href="<?= htmlspecialchars($basePath, ENT_QUOTES) ?>/assets/css/styles.css" />
+  </head>
+  <body class="bg-body text-body">
+    <div
+      id="alerts"
+      class="alerts-stack"
+      aria-live="polite"
+      aria-atomic="true"
+    ></div>
+    <header>
+      <nav
+        class="navbar navbar-expand-lg navbar-dark bg-gradient-primary fixed-top shadow-sm"
+      >
+        <div class="container">
+          <a class="navbar-brand fw-semibold" href="#top">Conformité Actes</a>
+          <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarContent"
+            aria-controls="navbarContent"
+            aria-expanded="false"
+            aria-label="Basculer la navigation"
+          >
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarContent">
+            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+              <li class="nav-item">
+                <a class="nav-link" href="#hero">Accueil</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#upload">Charger un fichier</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#resultats">Résultats</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main id="top" class="main-content">
+      <section id="hero" class="hero-section py-5">
+        <div class="container">
+          <div class="row align-items-center g-5">
+            <div class="col-lg-6 text-center text-lg-start">
+              <span
+                class="badge rounded-pill text-bg-light text-primary fw-semibold mb-3"
+              >
+                Analyse automatisée
+              </span>
+              <h1 class="display-5 fw-semibold text-white mb-3">
+                Vérifiez vos actes NGAP &amp; CCAM en quelques secondes
+              </h1>
+              <p class="lead text-white-75 mb-4">
+                Importez votre fichier CSV de facturation, comparez-le à votre
+                base de données et exportez les actes manquants pour sécuriser la
+                conformité de vos dossiers.
+              </p>
+              <a class="btn btn-light btn-lg shadow-sm" href="#upload">
+                <i class="bi bi-upload me-2"></i>Déposer un CSV
+              </a>
+            </div>
+            <div class="col-lg-6">
+              <div class="hero-card shadow-lg">
+                <h2 class="h4 fw-semibold text-primary mb-3">
+                  Processus simplifié
+                </h2>
+                <ul class="list-unstyled mb-0">
+                  <li class="d-flex align-items-start mb-3">
+                    <span class="hero-icon me-3 text-primary">
+                      <i class="bi bi-cloud-arrow-up"></i>
+                    </span>
+                    <div>
+                      <h3 class="h6 fw-semibold mb-1">1. Déposez votre CSV</h3>
+                      <p class="mb-0 text-body-secondary">
+                        Validez automatiquement le format attendu avant
+                        d'envoyer vos données.
+                      </p>
+                    </div>
+                  </li>
+                  <li class="d-flex align-items-start mb-3">
+                    <span class="hero-icon me-3 text-primary">
+                      <i class="bi bi-arrow-repeat"></i>
+                    </span>
+                    <div>
+                      <h3 class="h6 fw-semibold mb-1">
+                        2. Lancez la comparaison
+                      </h3>
+                      <p class="mb-0 text-body-secondary">
+                        L’API traite votre fichier et renvoie les actes trouvés
+                        et manquants.
+                      </p>
+                    </div>
+                  </li>
+                  <li class="d-flex align-items-start">
+                    <span class="hero-icon me-3 text-primary">
+                      <i class="bi bi-box-arrow-down"></i>
+                    </span>
+                    <div>
+                      <h3 class="h6 fw-semibold mb-1">
+                        3. Exportez les manquants
+                      </h3>
+                      <p class="mb-0 text-body-secondary">
+                        Téléchargez la liste des actes à corriger pour garantir
+                        la conformité.
+                      </p>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="upload" class="upload-section py-5">
+        <div class="container">
+          <div class="row g-4 align-items-stretch">
+            <div class="col-lg-7">
+              <div id="dropzone" class="dropzone card h-100 border-0 shadow-sm">
+                <div
+                  class="card-body d-flex flex-column align-items-center justify-content-center text-center"
+                >
+                  <div class="dropzone-icon text-primary mb-3">
+                    <i class="bi bi-filetype-csv"></i>
+                  </div>
+                  <h2 class="h4 fw-semibold mb-2">
+                    Glissez-déposez votre CSV ici
+                  </h2>
+                  <p class="text-body-secondary mb-4">
+                    Format attendu : séparateur « ; » avec en-têtes compatibles.
+                    Vous pouvez également utiliser le bouton ci-dessous.
+                  </p>
+                  <div class="w-100">
+                    <label class="form-label fw-semibold" for="fileInput"
+                      >Sélectionnez un fichier</label
+                    >
+                    <input
+                      id="fileInput"
+                      type="file"
+                      class="form-control form-control-lg"
+                      accept=".csv"
+                      aria-describedby="fileHelp"
+                    />
+                    <div id="fileHelp" class="form-text">
+                      Seuls les fichiers .csv sont acceptés. Limité à un fichier
+                      par import.
+                    </div>
+                    <div
+                      id="fileName"
+                      class="selected-file small text-body-secondary mt-3"
+                    >
+                      Aucun fichier sélectionné
+                    </div>
+                  </div>
+                  <div class="d-flex flex-column flex-sm-row gap-3 mt-4 w-100">
+                    <button
+                      id="btnCompare"
+                      class="btn btn-primary btn-lg flex-fill"
+                    >
+                      <i class="bi bi-play-circle me-2"></i>Lancer la
+                      comparaison
+                    </button>
+                    <button
+                      id="btnExport"
+                      class="btn btn-outline-primary btn-lg flex-fill"
+                      type="button"
+                      disabled
+                    >
+                      <i class="bi bi-file-earmark-arrow-down me-2"></i>Exporter
+                      manquants
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-5">
+              <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                  <h2 class="h5 fw-semibold mb-3">
+                    Conseils pour un import réussi
+                  </h2>
+                  <ul class="list-unstyled guidance-list mb-0">
+                    <li class="d-flex mb-3">
+                      <span class="badge rounded-pill text-bg-primary me-3"
+                        >1</span
+                      >
+                      <div>
+                        <p class="fw-semibold mb-1">
+                          Respectez les en-têtes obligatoires :
+                        </p>
+                        <code class="text-wrap"
+                          >DATE_ACTE;NUM_INTERVENTION;NUM_VENUE;ACTE_ID;CODE_ACTE;ACTIVITE_OU_COEFF;TYPE_ACTE</code
+                        >
+                      </div>
+                    </li>
+                    <li class="d-flex mb-3">
+                      <span class="badge rounded-pill text-bg-primary me-3"
+                        >2</span
+                      >
+                      <div>
+                        <p class="fw-semibold mb-1">
+                          Utilisez le point-virgule « ; » comme séparateur.
+                        </p>
+                        <p class="text-body-secondary mb-0">
+                          Les autres séparateurs seront refusés automatiquement.
+                        </p>
+                      </div>
+                    </li>
+                    <li class="d-flex">
+                      <span class="badge rounded-pill text-bg-primary me-3"
+                        >3</span
+                      >
+                      <div>
+                        <p class="fw-semibold mb-1">
+                          Un seul fichier à la fois.
+                        </p>
+                        <p class="text-body-secondary mb-0">
+                          En cas d'erreur, corrigez votre CSV avant de
+                          réessayer.
+                        </p>
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="resultats" class="results-section py-5">
+        <div class="container">
+          <div class="row g-4 mb-4">
+            <div class="col-md-6 col-xl-3">
+              <div class="kpi-card card shadow-sm border-0 h-100">
+                <div class="card-body">
+                  <div class="kpi-label">Actes trouvés</div>
+                  <div id="kpiFound" class="kpi-value">0</div>
+                  <span class="kpi-icon text-success">
+                    <i class="bi bi-check-circle-fill"></i>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6 col-xl-3">
+              <div class="kpi-card card shadow-sm border-0 h-100">
+                <div class="card-body">
+                  <div class="kpi-label">Actes non trouvés</div>
+                  <div id="kpiMissing" class="kpi-value">0</div>
+                  <span class="kpi-icon text-danger">
+                    <i class="bi bi-exclamation-octagon-fill"></i>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6 col-xl-3">
+              <div class="kpi-card card shadow-sm border-0 h-100">
+                <div class="card-body">
+                  <div class="kpi-label">Suivi NGAP</div>
+                  <div class="kpi-subvalue text-primary">
+                    <span id="kpiNgapMissing" class="kpi-subvalue-number"
+                      >0</span
+                    >
+                    <span class="kpi-subvalue-text">actes NGAP manquants</span>
+                  </div>
+                  <p class="mb-0 text-body-secondary">
+                    Corrigez ces écarts pour garantir la conformité NGAP.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6 col-xl-3">
+              <div class="kpi-card card shadow-sm border-0 h-100">
+                <div class="card-body">
+                  <div class="kpi-label">Suivi CCAM</div>
+                  <div class="kpi-subvalue text-danger">
+                    <span id="kpiCcamMissing" class="kpi-subvalue-number"
+                      >0</span
+                    >
+                    <span class="kpi-subvalue-text">actes CCAM manquants</span>
+                  </div>
+                  <p class="mb-0 text-body-secondary">
+                    Surveillez ces actes pour anticiper les corrections CCAM.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card shadow-sm border-0">
+            <div class="card-body">
+              <div
+                class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3 mb-4"
+              >
+                <div>
+                  <h2 class="h5 fw-semibold mb-1">Répartition des résultats</h2>
+                  <p class="mb-0 text-body-secondary">
+                    Visualisez la proportion d'actes trouvés et manquants pour
+                    prioriser vos actions.
+                  </p>
+                </div>
+                <span class="badge rounded-pill text-bg-primary"
+                  >Mise à jour en temps réel</span
+                >
+              </div>
+              <div class="chart-wrapper">
+                <canvas
+                  id="pieChart"
+                  aria-label="Répartition des actes"
+                  role="img"
+                ></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer py-4 mt-auto">
+      <div class="container text-center text-lg-start">
+        <div class="row align-items-center g-3">
+          <div class="col-lg-6 text-light">
+            © <span id="currentYear"></span> Conformité Actes. Tous droits
+            réservés.
+          </div>
+          <div class="col-lg-6 text-lg-end">
+            <a class="link-light me-3" href="#upload">Déposer un fichier</a>
+            <a class="link-light" href="#resultats">Consulter les résultats</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <footer id="copyright" class="legal-footer" role="contentinfo">
+      © 2025 Harbi Noureddine
+      <span class="legal-footer-links">
+        <span aria-hidden="true">—</span>
+        <a
+          class="legal-footer-link"
+          href="<?= htmlspecialchars($basePath, ENT_QUOTES) ?>/legal.html"
+          rel="nofollow"
+          >Mentions légales</a
+        >
+      </span>
+    </footer>
+
+    <div
+      id="overlay"
+      class="overlay d-none"
+      role="status"
+      aria-live="assertive"
+      aria-hidden="true"
+    >
+      <div class="overlay-content text-center text-white">
+        <div
+          class="spinner-border spinner-border-lg mb-3"
+          role="status"
+          aria-hidden="true"
+        ></div>
+        <p class="fw-semibold mb-0">Traitement en cours…</p>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
+
+    <script>
+      window.APP_BASE_PATH = <?= json_encode($basePath, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) ?>;
+    </script>
+    <script src="<?= htmlspecialchars($basePath, ENT_QUOTES) ?>/assets/js/app.js"></script>
+  </body>
+</html>
